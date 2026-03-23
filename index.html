@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gazete Hacettepe - API Arayüzü</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; }
+        h1 { text-align: center; color: #2c3e50; }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
+        .card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); }
+        .card img { width: 100%; height: 200px; object-fit: cover; }
+        .card-content { padding: 15px; }
+        .title { font-size: 1.1em; font-weight: bold; margin: 0 0 10px 0; color: #2980b9; }
+        .meta { font-size: 0.8em; color: #7f8c8d; margin-bottom: 10px; }
+        .summary { font-size: 0.9em; color: #34495e; line-height: 1.4; }
+        .link { display: inline-block; margin-top: 15px; padding: 8px 15px; background-color: #3498db; color: white; text-decoration: none; border-radius: 5px; font-size: 0.9em; }
+        .loading { text-align: center; font-size: 1.2em; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+
+    <h1>Gazete Hacettepe Ödüller API'si</h1>
+    <div id="haber-sahnesi" class="grid-container">
+        <div class="loading">Veriler API'den çekiliyor... Lütfen bekleyin.</div>
+    </div>
+
+    <script>
+        // API adresimiz (Şu an lokal bilgisayarındaki adres)
+        const API_URL = "http://127.0.0.1:8000/haberler";
+
+        fetch(API_URL)
+            .then(response => response.json())
+            .then(data => {
+                const sahne = document.getElementById('haber-sahnesi');
+                sahne.innerHTML = ''; // Yükleniyor yazısını temizle
+
+                // API'mizden gelen "records" (haberler) listesinde dönüyoruz
+                data.records.forEach(haber => {
+                    // Eğer haberin görseli yoksa varsayılan boş bir resim koy
+                    const gorsel = haber.image_url ? haber.image_url : 'https://via.placeholder.com/300x200?text=Gorsel+Yok';
+                    
+                    // Her bir haber için bir HTML kartı oluşturuyoruz
+                    const kartHTML = `
+                        <div class="card">
+                            <img src="${gorsel}" alt="Haber Görseli">
+                            <div class="card-content">
+                                <h3 class="title">${haber["dc:title"]}</h3>
+                                <div class="meta">✍️ ${haber["dc:creator"]} | 📅 ${haber["dc:date"]}</div>
+                                <div class="summary">${haber["dc:description"]}</div>
+                                <a href="${haber["dc:identifier"]}" target="_blank" class="link">Haberin Tamamı</a>
+                            </div>
+                        </div>
+                    `;
+                    sahne.innerHTML += kartHTML;
+                });
+            })
+            .catch(hata => {
+                document.getElementById('haber-sahnesi').innerHTML = `<div class="loading">Hata oluştu: Arka plan API'si çalışmıyor olabilir.</div>`;
+                console.error("API Hatası:", hata);
+            });
+    </script>
+</body>
+</html>
